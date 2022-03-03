@@ -1,0 +1,30 @@
+version: '3.7'
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-13}-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-r2ls}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+    volumes:
+      - db-data:/var/lib/postgresql/data:rw
+  php-fpm:
+    build: ./docker/php-fpm
+    volumes:
+    - ./:/app
+  nginx:
+    image: nginx:alpine
+    ports:
+    - "80:80"
+    volumes:
+    - ./:/app
+    - ./var/log/nginx:/var/log/nginx
+    - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - php-fpm
+    working_dir: /app
+
+volumes:
+  db-data:
